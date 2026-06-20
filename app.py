@@ -401,7 +401,7 @@ class RedeemCode(db.Model):
 # Settings helpers
 # ---------------------------------------------------------------------------
 DEFAULT_SETTINGS = {
-    "brand_name": "GraveStudio - Лучшая студия!",
+    "brand_name": "GraveStudio - Лучшая студия!!",
     "brand_tagline": "Мы строим качество, которое работает на вас.",
     "brand_logo": "https://cdn.discordapp.com/attachments/1511411379008176229/1516750689249005608/wNWOpAAAABklEQVQDAKF8cyz8ABcAAAAAElFTkSuQmCC.png?ex=6a33c7a8&is=6a327628&hm=d2de6a6cb9a0374a2b6eb714c04512f65cf50565bec59e65e17d3ceccc96f127&",
     "hero_title": "GraveStudio",
