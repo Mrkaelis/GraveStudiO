@@ -29,7 +29,7 @@ from authlib.integrations.flask_client import OAuth
 from sqlalchemy import inspect, text as sa_text
 
 # Категории сборок, по которым пользователи оставляют отзывы.
-REVIEW_CATEGORIES = ["RW Defaults", "RW Full", "RW Premium"]
+REVIEW_CATEGORIES = ["RW Default", "RW Full", "RW Premium"]
 
 load_dotenv()
 
@@ -401,7 +401,7 @@ class RedeemCode(db.Model):
 # Settings helpers
 # ---------------------------------------------------------------------------
 DEFAULT_SETTINGS = {
-    "brand_name": "GraveStudio - Лучшая студия!!",
+    "brand_name": "GraveStudio - Лучшая студия!",
     "brand_tagline": "Мы строим качество, которое работает на вас.",
     "brand_logo": "https://cdn.discordapp.com/attachments/1511411379008176229/1516750689249005608/wNWOpAAAABklEQVQDAKF8cyz8ABcAAAAAElFTkSuQmCC.png?ex=6a33c7a8&is=6a327628&hm=d2de6a6cb9a0374a2b6eb714c04512f65cf50565bec59e65e17d3ceccc96f127&",
     "hero_title": "GraveStudio",
@@ -411,9 +411,9 @@ DEFAULT_SETTINGS = {
         "Наша миссия — разрабатывать сборки ReallyWorld, которые не просто функционируют, а становятся основой успешного проекта. Мы уделяем внимание каждой детали, обеспечивая высочайшую оптимизацию и бесперебойную работу вашего сервера. Вы получите продукт, созданный с заботой о ваших целях. "
         "Мы работаем чисто, в срок и с гарантией."
     ),
-    "background_color": "#0b0b12",
+    "background_color": "#a0a0a0",
     "background_image": "",
-    "accent_color": "#7c3aed",
+    "accent_color": "#555555",
     "link_discord": "https://discord.gg/",
     "link_telegram": "https://t.me/officialGraveStudio",
     "link_funpay": "https://funpay.com/users/17053232/",
@@ -1443,62 +1443,10 @@ def _ensure_hardcoded_admins():
 
 
 def seed():
-    """
-    Создаёт таблицы и заполняет стартовые данные.
-
-    ВАЖНО: gunicorn запускает несколько воркеров (см. Procfile: -w 2), и каждый
-    воркер импортирует этот модуль отдельно — то есть seed() реально вызывается
-    несколько раз почти одновременно при старте. Если все воркеры одновременно
-    выполнят db.create_all() на PostgreSQL, возможна гонка на системном
-    каталоге (UniqueViolation на pg_type/pg_class).
-
-    Решение — PostgreSQL advisory lock: только один воркер реально выполняет
-    создание таблиц и засев данных, остальные дожидаются его и идут дальше
-    без повторной работы и без гонки. На SQLite advisory lock не существует
-    и не нужен (там нет параллельных подключений в той же степени), поэтому
-    в этом случае сразу выполняем обычную инициализацию.
-    """
-    is_postgres = app.config["SQLALCHEMY_DATABASE_URI"].startswith("postgresql")
-
     with app.app_context():
-        lock_acquired = True
-        if is_postgres:
-            # Произвольное фиксированное число — просто "имя" замка, общее
-            # для всех воркеров этого приложения.
-            LOCK_KEY = 727182
-            try:
-                db.session.execute(sa_text("SELECT pg_advisory_lock(:k)"), {"k": LOCK_KEY})
-            except Exception as e:
-                app.logger.warning("Не удалось взять advisory lock, продолжаем без него: %s", e)
-                lock_acquired = False
-
-        try:
-            _run_seed_steps()
-        finally:
-            if is_postgres and lock_acquired:
-                try:
-                    db.session.execute(sa_text("SELECT pg_advisory_unlock(:k)"), {"k": 727182})
-                    db.session.commit()
-                except Exception:
-                    db.session.rollback()
-
-
-def _run_seed_steps():
-    """Фактическое создание таблиц и засев стартовых данных (вызывается из seed())."""
-    try:
         db.create_all()
-    except Exception as e:  # подстраховка на случай гонки, даже если lock не сработал
-        db.session.rollback()
-        app.logger.warning("db.create_all() пропущен (вероятно гонка воркеров): %s", e)
-
-    try:
         _migrate_review_table()
         _migrate_user_table()
-    except Exception as e:
-        db.session.rollback()
-        app.logger.warning("Миграция колонок пропущена (вероятно гонка воркеров): %s", e)
-
-    try:
         _ensure_hardcoded_admins()
 
         # defaults
@@ -1508,9 +1456,9 @@ def _run_seed_steps():
 
         if Service.query.count() == 0:
             for i, (t, p, d) in enumerate([
-                ("RW Default", "от 500₽", "Стандартный пакет настройки сервера."),
-                ("RW Full", "от 1500₽", "Полная сборка с плагинами и кастомом."),
-                ("RW Business", "от 5000₽", "Бизнес-пакет: поддержка 24/7, индивидуальные решения."),
+                ("RW Default", "от 249₽", "Стандартный пакет настройки сервера."),
+                ("RW Full", "от 470₽", "Полная сборка с плагинами и кастомом."),
+                ("RW Premium", "от 700₽", "Премиум-пакет: поддержка 24/7, индивидуальные решения."),
             ]):
                 db.session.add(Service(title=t, price=p, description=d, order=i))
 
@@ -1533,9 +1481,6 @@ def _run_seed_steps():
                 ))
 
         db.session.commit()
-    except Exception as e:
-        db.session.rollback()
-        app.logger.warning("Seed стартовых данных пропущен (вероятно гонка воркеров): %s", e)
 
 
 # ---------------------------------------------------------------------------
