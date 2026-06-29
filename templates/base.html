@@ -28,13 +28,7 @@
 </style>
 </head>
 <body>
-<!--
-  © {{ brand_name }} — код, дизайн и контент этой страницы защищены
-  авторским правом. Копирование, парсинг и использование без письменного
-  разрешения правообладателя запрещены.
--->
 <div class="sr-protect" aria-hidden="true">© {{ brand_name }} — дизайн и код защищены авторским правом.</div>
-
 <canvas id="particles-fx" data-effect="{{ particle_effect }}" aria-hidden="true"></canvas>
 
 {% block header %}
@@ -60,45 +54,15 @@
     {% if site_links.telegram %}<a class="icon-btn telegram" target="_blank" rel="noopener" href="{{ site_links.telegram }}">Telegram</a>{% endif %}
 
     {% if current_user.is_authenticated %}
-      <div class="profile-wrap">
-        <button type="button" class="user-chip" onclick="toggleProfileMenu(event)">
-          {% if current_user.avatar_url %}
-            <img src="{{ current_user.avatar_url }}" alt="">
-          {% else %}
-            <span class="avatar-fallback">{{ (current_user.name or current_user.email)[0]|upper }}</span>
-          {% endif %}
-          <span>{{ current_user.name or current_user.email }}</span>
-          <span class="balance-pill">{{ current_user.balance|money }} ₽</span>
-        </button>
-
-        <div class="profile-menu" id="profile-menu">
-          <div class="profile-menu-head">
-            {% if current_user.avatar_url %}
-              <img src="{{ current_user.avatar_url }}" alt="">
-            {% else %}
-              <span class="avatar-fallback">{{ (current_user.name or current_user.email)[0]|upper }}</span>
-            {% endif %}
-            <div>
-              <div class="profile-menu-name">{{ current_user.name or current_user.email }}</div>
-              <div class="profile-menu-email">{{ current_user.email }}</div>
-            </div>
-          </div>
-
-          <div class="profile-menu-balance">
-            <span>Баланс</span>
-            <b>{{ current_user.balance|money }} ₽</b>
-          </div>
-
-          <form method="POST" action="{{ url_for('redeem_code') }}" class="profile-menu-redeem">
-            <input type="hidden" name="next" value="{{ request.path }}">
-            <input type="text" name="code" placeholder="Код активации" autocomplete="off" required>
-            <button class="btn-sm primary" type="submit">Активировать</button>
-          </form>
-
-          <a class="profile-menu-link" href="{{ url_for('my_builds') }}">📦 Мои сборки</a>
-          <a class="profile-menu-link" href="{{ url_for('logout') }}">Выйти</a>
-        </div>
-      </div>
+      <a href="{{ url_for('profile') }}" class="user-chip" style="text-decoration:none;">
+        {% if current_user.avatar_url %}
+          <img src="{{ current_user.avatar_url }}" alt="">
+        {% else %}
+          <span class="avatar-fallback">{{ (current_user.name or current_user.email)[0]|upper }}</span>
+        {% endif %}
+        <span>{{ current_user.name or current_user.email }}</span>
+        <span class="balance-pill">{{ current_user.balance|money }} ₽</span>
+      </a>
     {% else %}
       <a class="icon-btn" href="{{ url_for('auth_page') }}">Войти</a>
     {% endif %}
